@@ -1,3 +1,6 @@
+from enum import Enum
+from typing import TypedDict
+
 REORDER_SEAT_OPTIONS = [
     {
         'key': 'd',
@@ -15,8 +18,24 @@ REORDER_SEAT_OPTIONS = [
         'value': 'place_same_part_close'
     },
     {
-        'key': 'n',
-        'name': 'No Option',
+        'key': 'r',
+        'name': 'No Option (Just Random)',
         'value': 'no_option'
     }
 ]
+
+
+class PartOptions(Enum):
+    leader = 'leader'
+    group_leader = 'group_leader'
+    architect = 'architect'
+    design = 'design'
+    develop = 'develop'
+    null = 'null'
+
+
+class MemberInfo(TypedDict):
+    name: str
+    seat_index: int
+    is_empty: bool
+    part: PartOptions

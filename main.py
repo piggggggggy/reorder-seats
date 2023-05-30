@@ -21,7 +21,7 @@ except ImportError:
 style = style_from_dict({})
 
 
-def figletLog(string, color, font="slant"):
+def figlet_log(string, color, font="slant"):
     if colored:
         print(colored(figlet_format(
             string, font=font), color))
@@ -54,7 +54,7 @@ class ExcludedSeatValidator(Validator):
 
 
 
-def askReorderOptions():
+def ask_reorder_options():
     questions = [
         {
             'type': 'list',
@@ -63,14 +63,9 @@ def askReorderOptions():
             'choices': configs.REORDER_SEAT_OPTIONS
         },
         {
-            'type': 'confirm',
-            'name': 'include_absence',
-            'message': 'Do you include those who are vacant?',
-        },
-        {
             'type': 'input',
             'name': 'excluded_seats',
-            'message': 'Input seats to be excluded (space separated):',
+            'message': 'Input seats to be excluded (space separated, 4 count required):',
             'validate': ExcludedSeatValidator,
             'filter': lambda val: [int(seat) for seat in val.split()] if val else [],
         },
@@ -82,10 +77,10 @@ def askReorderOptions():
 
 @click.command()
 def main():
-    figletLog("  Cloudforet  ", color="magenta")
-    figletLog("Reorder Seats!!", color="light_blue")
+    figlet_log("  Cloudforet  ", color="magenta")
+    figlet_log("Reorder Seats!!", color="light_blue")
 
-    ask_results = askReorderOptions()
+    ask_results = ask_reorder_options()
     result = reorder_seats(ask_results)
     print_seats(result)
 

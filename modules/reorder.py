@@ -1,8 +1,9 @@
 from enum import Enum
+from typing import List
 import random
-from typing import TypedDict, List
 
 from modules.member_info_manager import MemberInfoManager
+from config.configs import MemberInfo
 
 member_data = 'config/members.json'
 
@@ -14,45 +15,73 @@ class ReorderSeatOptions(Enum):
     place_same_part_close = 'place_same_part_close'
 
 
-class ReorderArgs(TypedDict):
-    reorder_option: ReorderSeatOptions
-    include_absence: bool
-    excluded_seats: List['int']
-
-
-def reorder_seats(options: ReorderArgs):
+def reorder_seats(options: dict):
     reorder_option = options['reorder_option']
-    include_absence = options['include_absence']
     excluded_seats = options['excluded_seats']
 
+    # Load member list from json
     manager = MemberInfoManager(member_data)
     manager.load_members_from_json()
-    member_list = manager.members
+    member_list = manager.members.copy()
+    result = []
 
-    seat_indices = list(range(1, 25))
-    for excluded_seat in excluded_seats:
-        seat_indices.remove(excluded_seat)
+    # Get seat indices and exclude excluded seats
+    allowed_seat_indices = list(range(1, 25))
+    empty_list = [member for member in member_list if member['is_empty']]
+    for i, excluded_seat in enumerate(excluded_seats):
+        result.append({
+            'seat_index': excluded_seat,
+            'name': empty_list[i]['name'],
+            'is_empty': True,
+            'part': empty_list[i]['part'],
+        })
+        member_list.remove(empty_list[i])
+        allowed_seat_indices.remove(excluded_seat)
 
-    if reorder_option == ReorderSeatOptions.change_partner:
-        seat_indices = rearrange_numbers(seat_indices)
-    elif reorder_option == ReorderSeatOptions.prevent_duplicate:
-        random.shuffle(seat_indices)
+    # Shuffle member list by close part
+    if reorder_option == ReorderSeatOptions.place_same_part_close.value:
+        parts = ['leader', 'group_leader', 'architect', 'design', 'develop']
+        random.shuffle(parts)
+        random.shuffle(member_list)
+        member_list.sort(key=lambda x: parts.index(x['part']))
+        result.extend({
+            'seat_index': seat_index,
+            'name': member['name'],
+            'is_empty': member['is_empty'],
+            'part': member['part']
+        } for seat_index, member in zip(allowed_seat_indices, member_list))
+
+    # Shuffle member list by another options
     else:
-        random.shuffle(seat_indices)
-        random.shuffle(seat_indices)
 
-    for i, person in enumerate(member_list):
-        if not include_absence and person['absence']:
-            person['seat_index'] = -1
+        if reorder_option == ReorderSeatOptions.change_partner.value:
+            allowed_seat_indices = reorder_indices_by_change_partner(allowed_seat_indices)
+
+        elif reorder_option == ReorderSeatOptions.prevent_duplicate.value:
+            allowed_seat_indices = reorder_indices_by_prevent_duplicate(allowed_seat_indices)
+
         else:
-            person['seat_index'] = seat_indices[i]
+            allowed_seat_indices = reorder_indices_by_no_option(allowed_seat_indices)
 
-    manager.update_members(member_list)
+        result.extend({
+            'seat_index': seat_index,
+            'name': member_list[i]['name'],
+            'is_empty': member_list[i]['is_empty'],
+            'part': member_list[i]['part']
+        } for i, seat_index in enumerate(allowed_seat_indices))
+
+
+    # Sort member list by seat index
+    result = sort_by_seat_index(result)
+
+    # Save member list to json
+    manager.update_members(result)
     manager.save_members_to_json()
 
-    return member_list
+    return result
 
 
+# helper functions
 def check_conditions(numbers):
     for i in range(len(numbers) - 1):
         num1 = numbers[i]
@@ -67,12 +96,32 @@ def check_conditions(numbers):
     return True
 
 
-def rearrange_numbers(numbers: List['int']):
-    random.shuffle(numbers)
+def sort_by_seat_index(member_list: List['MemberInfo']):
+    return sorted(member_list, key=lambda member: member["seat_index"])
 
-    while not check_conditions(numbers):
-        random.shuffle(numbers)
 
-    return numbers
+# reorder functions
+def reorder_indices_by_change_partner(indices: List['int']):
+    result = indices.copy()
+    random.shuffle(result)
 
+    while not check_conditions(result):
+        random.shuffle(result)
+
+    return result
+
+
+def reorder_indices_by_prevent_duplicate(indices: List['int']):
+    result = indices.copy()
+    random.shuffle(result)
+
+    return result
+
+
+def reorder_indices_by_no_option(indices: List['int']):
+    result = indices.copy()
+    random.shuffle(result)
+    random.shuffle(result)
+
+    return result
 
