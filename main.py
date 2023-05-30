@@ -1,4 +1,5 @@
-import modules
+from modules.reorder import reorder_seats
+from modules.print import print_seats
 from config import configs
 
 import click
@@ -85,8 +86,8 @@ def main():
     figletLog("Reorder Seats!!", color="light_blue")
 
     ask_results = askReorderOptions()
-    result = modules.reorder_seats(ask_results)
-    modules.print_seats(result)
+    result = reorder_seats(ask_results)
+    print_seats(result)
 
 if __name__ == '__main__':
     main()
