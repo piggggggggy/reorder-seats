@@ -10,6 +10,11 @@ REORDER_SEAT_OPTIONS = [
         'value': 'change_partner'
     },
     {
+        'key': 's',
+        'name': 'Do you want the same parts to be placed close together?',
+        'value': 'place_same_part_close'
+    },
+    {
         'key': 'n',
         'name': 'No Option',
         'value': 'no_option'

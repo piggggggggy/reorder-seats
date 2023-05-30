@@ -15,6 +15,7 @@ class ReorderSeatOptions(Enum):
     prevent_duplicate = 'prevent_duplicate'
     change_partner = 'change_partner'
     no_option = 'no_option'
+    place_same_part_close = 'place_same_part_close'
 
 
 class ReorderArgs(TypedDict):
