@@ -50,8 +50,16 @@ class ExcludedSeatValidator(Validator):
             raise ValidationError(
                 message='Please input numbers only')
 
-        return excluded_seats
+        for seat in excluded_seats:
+            if seat > 24:
+                raise ValidationError(
+                    message='Please input under 24')
 
+        if len(excluded_seats) != 4:
+            raise ValidationError(
+                message='Please input 4 seats')
+
+        return excluded_seats
 
 
 def ask_reorder_options():
