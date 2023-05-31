@@ -6,6 +6,7 @@ from rich.progress import track
 
 from config.configs import MemberInfo
 
+EMPTY_SEAT = '빈자리'
 
 def print_seats(member_list: List['MemberInfo']):
     for _ in track(range(100), description="Reordering...", show_speed=False):
@@ -15,11 +16,11 @@ def print_seats(member_list: List['MemberInfo']):
     column_size = 2
     total_pictures = 3
 
-    template = [[['빈자리'] * row_size for _ in range(column_size)] for _ in range(total_pictures)]
+    template = [[[EMPTY_SEAT] * row_size for _ in range(column_size)] for _ in range(total_pictures)]
 
     for member in member_list:
         seat_number = member['seat_index']
-        name = member['name'] if not member['is_empty'] else '빈자리'
+        name = member['name'] if not member['is_empty'] else EMPTY_SEAT
         template_index, seat_index = divmod(seat_number - 1, row_size * column_size)
         column, row = divmod(seat_index, row_size)
         template[template_index][column][row] = name
